@@ -49,7 +49,7 @@ const analyzeSchema: Schema = {
 
 export const analyzeResumeWithAI = async (resumeText: string, jobDescription: string) => {
     const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash-latest',
+        model: 'gemini-2.0-flash',
         generationConfig: {
             responseMimeType: "application/json",
             responseSchema: analyzeSchema,
@@ -74,7 +74,7 @@ export const analyzeResumeWithAI = async (resumeText: string, jobDescription: st
 };
 
 export const optimizeSummaryWithAI = async (currentSummary: string, jobDescription: string) => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const prompt = `
         You are an expert resume writer. 
