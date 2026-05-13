@@ -186,6 +186,11 @@ function App() {
                     )}
                   </div>
                </div>
+               {analyzeMutation.isError && (
+                 <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="w-full p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 rounded-xl mb-4 text-sm font-semibold shrink-0">
+                   {analyzeMutation.error?.message || "An unknown error occurred. Make sure your Gemini API Key is set in Vercel!"}
+                 </motion.div>
+               )}
                <Button 
                 className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white shadow-lg shadow-orange-900/20 border-0 h-14 text-sm font-semibold transition-all group shrink-0"
                 disabled={!file || !jobDescription || analyzeMutation.isPending}
