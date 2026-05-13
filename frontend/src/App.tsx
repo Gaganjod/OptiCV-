@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { History, User, Moon, Rocket, Settings, CheckSquare, Search, List, Activity, HelpCircle, Edit3, Plus, UploadCloud, FileText, ChevronRight, Loader2, CheckCircle2, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useAnalyzeResume, useOptimizeSummary, type AnalysisResponse } from '@/hooks/useAnalyzeResume';
+import { useAnalyzeResume, type AnalysisResponse } from '@/hooks/useAnalyzeResume';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
