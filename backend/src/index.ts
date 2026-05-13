@@ -6,6 +6,7 @@ import dns from 'node:dns';
 
 // Fix for Node 18+ "fetch failed" error when hitting Google APIs due to IPv6 issues
 dns.setDefaultResultOrder('ipv4first');
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Bypass local antivirus/proxy SSL interception
 
 dotenv.config({ path: '../.env' }); // Adjust path if needed, since .env might be in root or backend
 

@@ -68,9 +68,18 @@ export const analyzeResumeWithAI = async (resumeText: string, jobDescription: st
         ${resumeText}
     `;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return JSON.parse(response.text());
+    try {
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return JSON.parse(response.text());
+    } catch (error: any) {
+        console.error("Gemini API Error:", error);
+        if (error.cause) {
+            console.error("Underlying Fetch Error Cause:", error.cause);
+            throw new Error(`Google API Connection Error: ${error.cause.message || error.cause.code || 'Unknown network drop'}`);
+        }
+        throw error;
+    }
 };
 
 export const optimizeSummaryWithAI = async (currentSummary: string, jobDescription: string) => {
