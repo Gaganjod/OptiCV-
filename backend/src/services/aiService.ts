@@ -1,5 +1,10 @@
 import { GoogleGenerativeAI, SchemaType, Schema } from '@google/generative-ai';
 import dotenv from 'dotenv';
+import dns from 'node:dns';
+
+// Force IPv4 to prevent Node.js fetch failed errors with Google APIs
+dns.setDefaultResultOrder('ipv4first');
+
 dotenv.config({ path: '../.env' });
 
 const apiKey = process.env.GEMINI_API_KEY;
