@@ -12,11 +12,16 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api', apiRoutes);
+app.use('/_/backend/api', apiRoutes); // Support Vercel experimentalServices prefix
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend is running' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
+
+export default app;
