@@ -2,19 +2,28 @@ import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
-import { History, User, Moon, Rocket, Settings, CheckSquare, Search, List, Activity, HelpCircle, Edit3, Plus, UploadCloud, FileText, ChevronRight, Loader2, CheckCircle2, Zap } from 'lucide-react';
+import { History, User, Moon, Rocket, Settings, CheckSquare, Search, List, Activity, HelpCircle, Edit3, Plus, UploadCloud, FileText, ChevronRight, Loader2, CheckCircle2, Zap, PenTool, Mail, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useAnalyzeResume, type AnalysisResponse } from '@/hooks/useAnalyzeResume';
+import { useAnalyzeResume, useGenerateCoverLetter, type AnalysisResponse } from '@/hooks/useAnalyzeResume';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   const [darkMode, setDarkMode] = useState(true);
+  const [activeTab, setActiveTab] = useState<'analysis' | 'coverLetter'>('analysis');
   
   const analyzeMutation = useAnalyzeResume();
+  const generateLetterMutation = useGenerateCoverLetter();
+  
   const analysis: AnalysisResponse | undefined = analyzeMutation.data;
+  const coverLetter = generateLetterMutation.data?.coverLetter;
+
+  const handleGenerateCoverLetter = () => {
+    if (!file || !jobDescription) return;
+    generateLetterMutation.mutate({ file, jobDescription });
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) setFile(acceptedFiles[0]);
@@ -150,10 +159,27 @@ function App() {
         {/* ======================= CENTER COLUMN ======================= */}
         <div className="lg:col-span-6 flex flex-col gap-6 overflow-y-auto pr-2 pb-6">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Active Comparison</h2>
-            <button className="px-4 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-shadow">
-              Comparison Mode
-            </button>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white">Workspace</h2>
+            {analysis ? (
+              <div className="flex bg-slate-200 dark:bg-white/10 p-1 rounded-lg">
+                  <button 
+                    onClick={() => setActiveTab('analysis')}
+                    className={cn("px-4 py-1.5 rounded-md text-sm font-bold transition-all", activeTab === 'analysis' ? "bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200")}
+                  >
+                    Analysis
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab('coverLetter')}
+                    className={cn("px-4 py-1.5 rounded-md text-sm font-bold transition-all", activeTab === 'coverLetter' ? "bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200")}
+                  >
+                    Cover Letter
+                  </button>
+              </div>
+            ) : (
+              <button className="px-4 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg text-sm font-bold text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/40 transition-shadow">
+                Comparison Mode
+              </button>
+            )}
           </div>
 
           {!analysis && (
@@ -206,7 +232,7 @@ function App() {
           )}
 
           {/* Text Comparison Views (Stacked) */}
-          {analysis && (
+          {analysis && activeTab === 'analysis' && (
             <div className="flex flex-col gap-6 shrink-0">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-5 flex flex-col min-h-[14rem] shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-semibold mb-3 text-slate-800 dark:text-slate-300">Original Resume Feedback</h3>
@@ -243,7 +269,7 @@ function App() {
           )}
 
           {/* Middle Split View: Summary & Experience */}
-          {analysis && analysis.bulletPointSuggestions.length > 0 && (
+          {analysis && analysis.bulletPointSuggestions.length > 0 && activeTab === 'analysis' && (
             <div className="flex flex-col gap-6 shrink-0 mt-2">
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-5 flex flex-col min-h-0 shrink-0 shadow-sm dark:shadow-none">
                 <h3 className="text-sm font-semibold mb-3 text-slate-800 dark:text-white">Summary Improvement (Before)</h3>
@@ -268,6 +294,57 @@ function App() {
                 </div>
               </motion.div>
             </div>
+          )}
+
+          {/* Cover Letter View */}
+          {analysis && activeTab === 'coverLetter' && (
+             <div className="flex flex-col gap-6 shrink-0 h-full">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-5 flex flex-col shadow-sm dark:shadow-none min-h-[500px]">
+                   <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-lg font-semibold text-slate-800 dark:text-white">AI Cover Letter Generator</h3>
+                     <div className="flex gap-2">
+                       {coverLetter && (
+                         <Button 
+                           variant="outline"
+                           className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 h-9"
+                           onClick={() => navigator.clipboard.writeText(coverLetter)}
+                         >
+                           <Copy className="w-4 h-4 mr-2" />
+                           Copy
+                         </Button>
+                       )}
+                       <Button 
+                         className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-md text-sm h-9"
+                         onClick={handleGenerateCoverLetter}
+                         disabled={generateLetterMutation.isPending}
+                       >
+                         {generateLetterMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PenTool className="w-4 h-4 mr-2" />}
+                         {coverLetter ? 'Regenerate' : 'Generate Cover Letter'}
+                       </Button>
+                     </div>
+                   </div>
+                   
+                   {generateLetterMutation.isError && (
+                     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="w-full p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 rounded-xl mb-4 text-sm font-semibold shrink-0">
+                       {generateLetterMutation.error?.message || "An unknown error occurred during generation."}
+                     </motion.div>
+                   )}
+
+                   {coverLetter ? (
+                     <div className="flex-1 bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 p-6 rounded-xl text-sm text-slate-800 dark:text-slate-300 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner font-serif">
+                       {coverLetter}
+                     </div>
+                   ) : (
+                     <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 dark:bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl p-6 text-center">
+                        <Mail className="w-12 h-12 text-slate-300 dark:text-white/20 mb-4" />
+                        <h4 className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-2">Create a Tailored Cover Letter</h4>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md">
+                           Click the button above to generate a highly professional cover letter. It will perfectly connect your past experience to the requirements of the job description.
+                        </p>
+                     </div>
+                   )}
+                </motion.div>
+             </div>
           )}
         </div>
 

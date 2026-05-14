@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { analyzeResume, optimizeSummary } from '../controllers/analyzeController';
+import { analyzeResume, optimizeSummary, generateCoverLetter } from '../controllers/analyzeController';
 
 const router = Router();
 
@@ -14,5 +14,6 @@ const upload = multer({
 
 router.post('/analyze', upload.single('resume'), analyzeResume);
 router.post('/optimize-summary', optimizeSummary);
+router.post('/generate-cover-letter', upload.single('resume'), generateCoverLetter);
 
 export default router;

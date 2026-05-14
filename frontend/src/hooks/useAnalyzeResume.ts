@@ -51,3 +51,25 @@ export const useOptimizeSummary = () => {
         },
     });
 };
+
+export const useGenerateCoverLetter = () => {
+    return useMutation<{ coverLetter: string }, Error, { file: File; jobDescription: string }>({
+        mutationFn: async ({ file, jobDescription }) => {
+            const formData = new FormData();
+            formData.append('resume', file);
+            formData.append('jobDescription', jobDescription);
+
+            const response = await fetch(`${API_URL}/api/generate-cover-letter`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to generate cover letter');
+            }
+
+            return response.json();
+        },
+    });
+};

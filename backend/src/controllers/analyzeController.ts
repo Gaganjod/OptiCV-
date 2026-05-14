@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { extractTextFromPDFBuffer } from '../services/pdfService';
-import { analyzeResumeWithAI, optimizeSummaryWithAI } from '../services/aiService';
+import { analyzeResumeWithAI, optimizeSummaryWithAI, generateCoverLetterWithAI } from '../services/aiService';
 
 export const analyzeResume = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -43,5 +43,28 @@ export const optimizeSummary = async (req: Request, res: Response): Promise<void
     } catch (error: any) {
         console.error("Optimization Error:", error);
         res.status(500).json({ error: error.message || "An error occurred during summary optimization." });
+    }
+};
+
+export const generateCoverLetter = async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.file) {
+             res.status(400).json({ error: "No resume PDF uploaded." });
+             return;
+        }
+
+        const jobDescription = req.body.jobDescription;
+        if (!jobDescription) {
+             res.status(400).json({ error: "Job description is required." });
+             return;
+        }
+
+        const resumeText = await extractTextFromPDFBuffer(req.file.buffer);
+        const coverLetter = await generateCoverLetterWithAI(resumeText, jobDescription);
+
+        res.status(200).json({ coverLetter });
+    } catch (error: any) {
+        console.error("Cover Letter Generation Error:", error);
+        res.status(500).json({ error: error.message || "An error occurred during cover letter generation." });
     }
 };

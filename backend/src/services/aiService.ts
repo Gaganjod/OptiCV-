@@ -101,3 +101,30 @@ export const optimizeSummaryWithAI = async (currentSummary: string, jobDescripti
     const response = await result.response;
     return response.text().trim();
 };
+
+export const generateCoverLetterWithAI = async (resumeText: string, jobDescription: string) => {
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' }); // using 1.5 flash for better results
+
+    const prompt = `
+        You are an expert career coach and professional resume writer.
+        I will provide you with a candidate's resume text and a job description.
+        Your task is to write a highly professional, tailored cover letter that connects the candidate's experience to the specific requirements of the job.
+        
+        The cover letter should be structured as follows:
+        - A strong opening paragraph expressing interest and hooking the reader.
+        - 1-2 body paragraphs highlighting relevant achievements from the resume that match the job description.
+        - A concluding paragraph with a call to action.
+
+        Return ONLY the cover letter text, properly formatted with paragraphs. Do not include any placeholder brackets like [Your Name] unless strictly necessary, try to infer the name from the resume. Just write it as best as you can with the provided info.
+
+        Job Description:
+        ${jobDescription}
+
+        Resume:
+        ${resumeText}
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text().trim();
+};
