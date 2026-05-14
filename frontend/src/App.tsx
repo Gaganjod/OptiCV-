@@ -13,6 +13,7 @@ function App() {
   const [jobDescription, setJobDescription] = useState('');
   const [darkMode, setDarkMode] = useState(true);
   const [activeTab, setActiveTab] = useState<'analysis' | 'coverLetter'>('analysis');
+  const [isCopied, setIsCopied] = useState(false);
   
   const analyzeMutation = useAnalyzeResume();
   const generateLetterMutation = useGenerateCoverLetter();
@@ -23,6 +24,14 @@ function App() {
   const handleGenerateCoverLetter = () => {
     if (!file || !jobDescription) return;
     generateLetterMutation.mutate({ file, jobDescription });
+  };
+
+  const handleCopy = () => {
+    if (coverLetter) {
+      navigator.clipboard.writeText(coverLetter);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -306,11 +315,14 @@ function App() {
                        {coverLetter && (
                          <Button 
                            variant="outline"
-                           className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 h-9"
-                           onClick={() => navigator.clipboard.writeText(coverLetter)}
+                           className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 h-9 transition-all"
+                           onClick={handleCopy}
                          >
-                           <Copy className="w-4 h-4 mr-2" />
-                           Copy
+                           {isCopied ? (
+                             <><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" /> Copied!</>
+                           ) : (
+                             <><Copy className="w-4 h-4 mr-2" /> Copy</>
+                           )}
                          </Button>
                        )}
                        <Button 
