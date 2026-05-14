@@ -3,7 +3,7 @@ import { HistoryModel } from '../models/History';
 
 export const getUserHistory = async (req: Request, res: Response): Promise<void> => {
     try {
-        const userId = req.query.userId;
+        const userId = req.query.userId as string;
         
         if (!userId) {
              res.status(400).json({ error: "userId is required." });
