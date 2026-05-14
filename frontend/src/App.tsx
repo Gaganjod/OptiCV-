@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { History, User, Moon, Rocket, Settings, CheckSquare, Search, List, Activity, HelpCircle, Edit3, Plus, UploadCloud, FileText, ChevronRight, Loader2, CheckCircle2, Zap, PenTool, Mail, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -315,14 +315,37 @@ function App() {
                        {coverLetter && (
                          <Button 
                            variant="outline"
-                           className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 h-9 transition-all"
+                           className={cn(
+                             "relative border-slate-300 dark:border-white/10 h-9 w-24 overflow-hidden transition-all duration-300",
+                             isCopied ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400" : "text-slate-700 dark:text-slate-200"
+                           )}
                            onClick={handleCopy}
                          >
-                           {isCopied ? (
-                             <><CheckCircle2 className="w-4 h-4 mr-2 text-emerald-500" /> Copied!</>
-                           ) : (
-                             <><Copy className="w-4 h-4 mr-2" /> Copy</>
-                           )}
+                           <AnimatePresence mode="wait" initial={false}>
+                             {isCopied ? (
+                               <motion.div
+                                 key="copied"
+                                 initial={{ y: 20, opacity: 0 }}
+                                 animate={{ y: 0, opacity: 1 }}
+                                 exit={{ y: -20, opacity: 0 }}
+                                 transition={{ duration: 0.2 }}
+                                 className="flex items-center absolute inset-0 justify-center"
+                               >
+                                 <CheckCircle2 className="w-4 h-4 mr-1.5" /> Copied
+                               </motion.div>
+                             ) : (
+                               <motion.div
+                                 key="copy"
+                                 initial={{ y: 20, opacity: 0 }}
+                                 animate={{ y: 0, opacity: 1 }}
+                                 exit={{ y: -20, opacity: 0 }}
+                                 transition={{ duration: 0.2 }}
+                                 className="flex items-center absolute inset-0 justify-center"
+                               >
+                                 <Copy className="w-4 h-4 mr-1.5" /> Copy
+                               </motion.div>
+                             )}
+                           </AnimatePresence>
                          </Button>
                        )}
                        <Button 
