@@ -28,7 +28,7 @@ app.get('/health', (req, res) => {
 if (process.env.MONGO_URI) {
   mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB successfully!'))
-    .catch((err) => console.error('MongoDB connection error:', err));
+    .catch((err: any) => console.error('MongoDB connection error:', err));
 } else {
   console.warn('MONGO_URI is missing. History feature will not work.');
 }
