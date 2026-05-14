@@ -103,7 +103,7 @@ export const optimizeSummaryWithAI = async (currentSummary: string, jobDescripti
 };
 
 export const generateCoverLetterWithAI = async (resumeText: string, jobDescription: string) => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' }); // using 1.5 flash for better results
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 
     const prompt = `
         You are an expert career coach and professional resume writer.
