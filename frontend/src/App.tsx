@@ -103,7 +103,7 @@ function App() {
       </header>
 
       {/* Main Grid Structure - 3 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-120px)] overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[calc(100vh-120px)] lg:overflow-hidden">
         
         {/* ======================= LEFT COLUMN ======================= */}
         <div className="lg:col-span-3 flex flex-col gap-6 overflow-y-auto pr-2 pb-6">
