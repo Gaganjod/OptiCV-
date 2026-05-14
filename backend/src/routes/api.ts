@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { analyzeResume, optimizeSummary, generateCoverLetter } from '../controllers/analyzeController';
+import { getUserHistory, deleteHistoryItem } from '../controllers/historyController';
 
 const router = Router();
 
@@ -15,5 +16,8 @@ const upload = multer({
 router.post('/analyze', upload.single('resume'), analyzeResume);
 router.post('/optimize-summary', optimizeSummary);
 router.post('/generate-cover-letter', upload.single('resume'), generateCoverLetter);
+
+router.get('/history', getUserHistory);
+router.delete('/history/:id', deleteHistoryItem);
 
 export default router;

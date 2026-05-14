@@ -3,27 +3,30 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { History, User, Moon, Rocket, Settings, CheckSquare, Search, List, Activity, HelpCircle, Edit3, Plus, UploadCloud, FileText, ChevronRight, Loader2, CheckCircle2, Zap, PenTool, Mail, Copy } from 'lucide-react';
+import { SignedIn, SignedOut, SignInButton, UserButton, useAuth } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useAnalyzeResume, useGenerateCoverLetter, type AnalysisResponse } from '@/hooks/useAnalyzeResume';
+import { useAnalyzeResume, useGenerateCoverLetter, useFetchHistory, type AnalysisResponse } from '@/hooks/useAnalyzeResume';
 
 function App() {
   const [file, setFile] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   const [darkMode, setDarkMode] = useState(true);
-  const [activeTab, setActiveTab] = useState<'analysis' | 'coverLetter'>('analysis');
+  const [activeTab, setActiveTab] = useState<'analysis' | 'coverLetter' | 'history'>('analysis');
   const [isCopied, setIsCopied] = useState(false);
+  const { userId } = useAuth();
   
   const analyzeMutation = useAnalyzeResume();
   const generateLetterMutation = useGenerateCoverLetter();
+  const { data: historyItems, isLoading: isHistoryLoading } = useFetchHistory(userId);
   
   const analysis: AnalysisResponse | undefined = analyzeMutation.data;
   const coverLetter = generateLetterMutation.data?.coverLetter;
 
   const handleGenerateCoverLetter = () => {
     if (!file || !jobDescription) return;
-    generateLetterMutation.mutate({ file, jobDescription });
+    generateLetterMutation.mutate({ file, jobDescription, userId: userId || undefined, historyId: analysis?.historyId });
   };
 
   const handleCopy = () => {
@@ -46,7 +49,7 @@ function App() {
 
   const handleAnalyze = () => {
     if (!file || !jobDescription) return;
-    analyzeMutation.mutate({ file, jobDescription });
+    analyzeMutation.mutate({ file, jobDescription, userId: userId || undefined });
   };
 
   const radarData = [
@@ -80,12 +83,22 @@ function App() {
           </h1>
         </div>
         <div className="flex items-center gap-6">
-          <button className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-            <History className="w-4 h-4" /> History
-          </button>
-          <button className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
-            <User className="w-4 h-4" /> Profile
-          </button>
+          <SignedIn>
+            <button 
+              onClick={() => setActiveTab('history')}
+              className={cn("flex items-center gap-2 text-sm font-medium transition-colors", activeTab === 'history' ? "text-orange-500" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200")}
+            >
+              <History className="w-4 h-4" /> History
+            </button>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="flex items-center gap-2 text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors">
+                <User className="w-4 h-4" /> Sign In
+              </button>
+            </SignInButton>
+          </SignedOut>
           <div className="flex items-center gap-3 bg-white dark:bg-white/5 px-3 py-1.5 rounded-full border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
             <Moon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             <div 
@@ -102,10 +115,54 @@ function App() {
         </div>
       </header>
 
-      {/* Main Grid Structure - 3 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[calc(100vh-120px)] lg:overflow-hidden">
-        
-        {/* ======================= LEFT COLUMN ======================= */}
+      {/* Main Grid Structure */}
+      {activeTab === 'history' ? (
+        <div className="bg-white dark:bg-white/5 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-6 h-[calc(100vh-120px)] overflow-y-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <History className="w-6 h-6 text-orange-500" />
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Your Analysis History</h2>
+          </div>
+          
+          {isHistoryLoading ? (
+            <div className="flex items-center justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>
+          ) : historyItems && historyItems.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {historyItems.map((item) => (
+                <div key={item._id} className="bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-white/5 rounded-xl p-5 hover:border-orange-500/50 transition-colors cursor-pointer group flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="bg-white dark:bg-white/10 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/5">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold">
+                      <Activity className="w-4 h-4" /> {item.matchScore}% Match
+                    </div>
+                  </div>
+                  <h3 className="font-semibold text-slate-800 dark:text-slate-100 mb-2 line-clamp-2">
+                    {item.jobDescription.substring(0, 100)}...
+                  </h3>
+                  <div className="mt-auto pt-4 flex gap-2">
+                     <span className="text-xs text-slate-500 bg-slate-200 dark:bg-white/5 px-2 py-1 rounded">
+                       {item.missingKeywords.length} missing keywords
+                     </span>
+                     {item.coverLetter && (
+                       <span className="text-xs text-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-1 rounded flex items-center">
+                         <Mail className="w-3 h-3 mr-1"/> Cover Letter
+                       </span>
+                     )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-12 text-slate-500">
+              No history found. Run an analysis to save it here!
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:h-[calc(100vh-120px)] lg:overflow-hidden">
+          
+          {/* ======================= LEFT COLUMN ======================= */}
         <div className="lg:col-span-3 flex flex-col gap-6 overflow-y-auto pr-2 pb-6">
           <h2 className="text-xl font-bold mb-1 text-slate-800 dark:text-white">Resume Analysis</h2>
           
@@ -435,7 +492,8 @@ function App() {
           </motion.div>
         </div>
 
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import apiRoutes from './routes/api';
 import dns from 'node:dns';
+import mongoose from 'mongoose';
 
 // Fix for Node 18+ "fetch failed" error when hitting Google APIs due to IPv6 issues
 dns.setDefaultResultOrder('ipv4first');
@@ -22,6 +23,15 @@ app.use('/_/backend/api', apiRoutes); // Support Vercel experimentalServices pre
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Backend is running' });
 });
+
+// MongoDB Connection
+if (process.env.MONGO_URI) {
+  mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log('Connected to MongoDB successfully!'))
+    .catch((err) => console.error('MongoDB connection error:', err));
+} else {
+  console.warn('MONGO_URI is missing. History feature will not work.');
+}
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
