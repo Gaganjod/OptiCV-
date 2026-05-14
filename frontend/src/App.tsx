@@ -68,13 +68,38 @@ function App() {
     }
   }, [darkMode]);
 
+  // Handle browser back button
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.tab) {
+        setActiveTab(event.state.tab);
+      } else {
+        setActiveTab('analysis');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const handleTabChange = (tab: 'analysis' | 'coverLetter' | 'history') => {
+    setActiveTab(tab);
+    window.history.pushState({ tab }, '');
+  };
+
   return (
     <div className="min-h-screen font-sans p-4 xl:p-6 transition-colors duration-300 bg-slate-50 text-slate-900 dark:bg-[#0B1120] dark:text-slate-100">
       
       {/* Header */}
       <header className="flex items-center justify-between mb-6 pb-4 border-b border-slate-200 dark:border-white/5">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl shadow-[0_0_15px_rgba(249,115,22,0.4)] relative overflow-hidden group">
+        <div 
+          className="flex items-center gap-3 cursor-pointer group" 
+          onClick={() => {
+            setActiveTab('analysis');
+            window.history.pushState({ tab: 'analysis' }, '');
+          }}
+        >
+          <div className="p-2 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl shadow-[0_0_15px_rgba(249,115,22,0.4)] relative overflow-hidden group-hover:scale-110 transition-transform duration-300">
             <div className="absolute inset-0 bg-white/20 blur-md translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
             <Zap className="w-6 h-6 text-white relative z-10" fill="currentColor" />
           </div>
@@ -85,7 +110,7 @@ function App() {
         <div className="flex items-center gap-6">
           <SignedIn>
             <button 
-              onClick={() => setActiveTab('history')}
+              onClick={() => handleTabChange('history')}
               className={cn("flex items-center gap-2 text-sm font-medium transition-colors", activeTab === 'history' ? "text-orange-500" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200")}
             >
               <History className="w-4 h-4" /> History
