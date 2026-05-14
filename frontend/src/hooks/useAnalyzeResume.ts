@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/_/backend' : 'http://localhost:5000');
 
@@ -30,8 +30,14 @@ const analyzeResume = async ({ file, jobDescription, userId }: { file: File; job
 };
 
 export const useAnalyzeResume = () => {
+    const queryClient = useQueryClient();
     return useMutation<AnalysisResponse, Error, { file: File; jobDescription: string; userId?: string }>({
         mutationFn: analyzeResume,
+        onSuccess: (_, variables) => {
+            if (variables.userId) {
+                queryClient.invalidateQueries({ queryKey: ['history', variables.userId] });
+            }
+        }
     });
 };
 
@@ -77,8 +83,14 @@ const generateCoverLetter = async ({ file, jobDescription, userId, historyId }: 
 };
 
 export const useGenerateCoverLetter = () => {
+    const queryClient = useQueryClient();
     return useMutation<{ coverLetter: string }, Error, { file: File; jobDescription: string; userId?: string; historyId?: string }>({
         mutationFn: generateCoverLetter,
+        onSuccess: (_, variables) => {
+            if (variables.userId) {
+                queryClient.invalidateQueries({ queryKey: ['history', variables.userId] });
+            }
+        }
     });
 };
 
